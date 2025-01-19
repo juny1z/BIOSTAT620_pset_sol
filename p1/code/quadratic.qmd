@@ -1,0 +1,61 @@
+---
+title: "beginning.qmd"
+format: pdf
+---
+
+```{r}
+solve_quadratic <- function(a, b, c) {
+  discriminant <- b^2 - 4 * a * c
+  if (discriminant < 0) {
+    return("no real solutions")
+  } else if (discriminant == 0) {
+    return(-b / (2 * a))
+  } else {
+    root1 <- (-b + sqrt(discriminant)) / (2 * a)
+    root2 <- (-b - sqrt(discriminant)) / (2 * a)
+    return(c(root1, root2))
+  }
+}
+
+```
+
+```{r}
+for (i in 1:3) {
+  # 路径指向当前目录的 data 和 results
+  input_file <- paste0("data/coefs", i, ".txt")
+  output_file <- paste0("results/results", i, ".txt")
+  
+  # 检查输入文件是否存在
+  if (!file.exists(input_file)) {
+    cat(paste("File not found:", input_file, "\n"))
+    next
+  }
+  
+  # 读取系数
+  coefficients <- tryCatch(
+    scan(input_file, what = numeric(), quiet = TRUE),
+    error = function(e) {
+      cat(paste("Error reading file:", input_file, "\n"))
+      return(NULL)
+    }
+  )
+  
+  # 如果读取失败则跳过
+  if (is.null(coefficients) || length(coefficients) != 3) {
+    cat(paste("Invalid coefficients in file:", input_file, "\n"))
+    next
+  }
+  
+  # 解方程
+  solutions <- solve_quadratic(coefficients[1], coefficients[2], coefficients[3])
+  
+  # 打印结果到控制台
+  cat(paste("Solutions for", input_file, ":", solutions, "\n"))
+  
+  # 将结果写入输出文件
+  if (is.character(solutions)) {
+    cat(solutions, "\n", file = output_file)
+  } else {
+    cat(solutions, collapse = "\n", file = output_file)
+  }
+}

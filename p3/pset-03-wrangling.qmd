@@ -173,14 +173,14 @@ print(head(cases_raw))
 ```{r}
 api <- "https://data.cdc.gov/resource/pwn4-m3yp.json"
 response <- request(api) |> 
-  req_url_query(`$limit` = 100000) |>
+  req_url_query(`$limit` = 10000000000) |>
   req_perform() |> 
   resp_body_json(simplifyVector = TRUE)
 
 cases_raw <- as_tibble(response) |> 
-  select(state, end_date, tot_cases) |>
+  select(state, end_date, new_cases) |>
   mutate(
-    cases = as.numeric(tot_cases),
+    cases = as.numeric(new_cases),
     date = as.Date(end_date)
   ) |> 
   select(state, date, cases) 
@@ -192,19 +192,18 @@ print(head(cases_raw))
 12. (1 point) For 2020 and 2021, make a time series plot of cases per 100,000 versus time for each state. Stratify the plot by region name and make a separate line plot for each state. Don't use colors for this plot, but set `alpha = 0.2` to make the plots more easily visable. Make sure to label your graph appropriately. 
 
 ```{r}
-cases_filtered <- cases_raw |> 
-  filter(year(date) %in% c(2020, 2021)) |>
-  mutate(state_name = state)
-cases_filtered <- cases_filtered |> 
-  left_join(regions, by = "state_name")
+cases_filtered <- cases_raw |>
+  filter(date >= as.Date("2020-01-01") & date <= as.Date("2021-12-31"))
 
-ggplot(cases_filtered, aes(x = date, y = cases, group = state)) +
-  geom_line(alpha = 0.2) + 
-  facet_wrap(~ region_name, scales = "free_y") + 
-  labs(title = "COVID-19 Cases per 100,000 People (2020-2021)",
-       x = "Date",
-       y = "Cases per 100,000",
-       caption = "Data Source: CDC") +
+ggplot(cases_filtered, aes(x = date, y = cases/100000, group = state)) +
+  geom_line(alpha = 0.2) +
+  facet_wrap(~ state, scales = "free_y") +
+  labs(
+    title = "COVID-19 Cases per 100,000 People (2020-2021)",
+    x = "Date",
+    y = "Cases per 100k",
+    caption = "Data Source: CDC"
+  ) +
   theme_minimal()
 
 ```

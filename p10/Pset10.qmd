@@ -1,0 +1,31 @@
+---
+title: "Pset10"
+format: html
+editor: visual
+---
+
+## Introduction
+
+This analysis uses a Support Vector Machine (SVM) classifier to predict handwritten digits from the MNIST dataset. The task involves training a machine learning model to classify grayscale image data into digits 0–9 and generating predictions on a test set.
+
+---
+
+## Method
+
+We first used Principal Component Analysis (PCA) to reduce the dimensionality of the pixel features. The original 784-dimensional image vectors were transformed into 150 principal components. This reduced noise and sped up training while retaining most of the variance in the data.
+
+The `e1071` package in R was used to train a Support Vector Machine with a radial basis function (RBF) kernel and a cost parameter of 5. The model was trained on the full training dataset and used to predict the labels of the test images.
+
+The predicted labels were saved into `digit_predictions.rds`.
+
+---
+
+## Reason for Model Choice
+
+SVM with an RBF kernel is known to perform well on image classification problems, particularly after dimensionality reduction with PCA. It is robust to overfitting and performs well with relatively little parameter tuning. PCA + SVM strikes a good balance between performance and efficiency for this problem.
+
+---
+
+## Result
+
+The model was applied to the test dataset provided. The predictions were output in the required format and saved as `digit_predictions.rds` for submission.

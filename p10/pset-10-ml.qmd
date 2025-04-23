@@ -1,0 +1,62 @@
+---
+title: Problem set 10
+date: 2025-04-20
+execute: 
+  eval: false
+---
+
+The data for this problem set is provided by this link: `https://github.com/dmcable/BIOSTAT620/raw/refs/heads/main/data/pset-10-mnist.rds`
+
+Read this object into R. For example, you can use:
+
+```{r}
+fn <- tempfile()
+download.file("https://github.com/dmcable/BIOSTAT620/raw/refs/heads/main/data/pset-10-mnist.rds", fn)
+dat <- readRDS(fn)
+file.remove(fn)
+```
+
+
+The object is a list with two components `dat$train` and `dat$test`. Use the data in `dat$train` to  develop a machine learning algorithms to predict the labels for the images in the `dat$test$images` component.
+
+Save the your predicted labels in an object called `digit_predictions`. This should be a vector of integers with length `nrow(dat$test$images)`. It is important that the `digit_predictions` is ordered to match the rows of `dat$test$images`.
+
+Save the object to a file called `digit_predictions.rds` using:
+
+```{r}
+library(e1071)
+
+train_images <- dat$train$images
+train_labels <- as.factor(dat$train$labels)
+train_df <- as.data.frame(train_images)
+train_df$label <- train_labels
+
+x_train_full <- train_df[, -ncol(train_df)]
+nzv <- apply(x_train_full, 2, sd) != 0
+x_train_full <- x_train_full[, nzv]
+
+pca_result <- prcomp(x_train_full, center = TRUE, scale. = TRUE)
+train_pca <- as.data.frame(pca_result$x[, 1:200])
+train_pca$label <- train_df$label
+
+svm_model <- svm(x = train_pca[, -ncol(train_pca)], y = train_pca$label, kernel = "radial", cost = 5)
+
+test_df <- as.data.frame(dat$test$images)
+test_pca <- predict(pca_result, newdata = test_df[, nzv])[, 1:200]
+test_pca <- as.data.frame(test_pca)
+
+digit_predictions <- predict(svm_model, newdata = test_pca)
+
+saveRDS(digit_predictions, file = "digit_predictions.rds")
+```
+
+You will submit:
+
+1. The file `digit_predictions.rds`
+
+2. A quarto file that reproduces your analysis and provides brief explanations for your choices. 
+
+**If your code reproduces the result**, your grade will be your accuracy  rounded up the closest integer. So, for example, if your accuracy is .993 your grade will be 100%. Depending on the distribution of accuracy values, the teaching staff may issue an update about the grading system used.
+
+You will have one opportunities to redo your predictions after you see your accuracy from your first submission.
+
